@@ -14,6 +14,7 @@ public class Users {
     private Long id;
 
     private String name;
+    @Column(unique = true)
     private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

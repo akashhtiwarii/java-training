@@ -30,6 +30,11 @@ public class UsersServiceImpl implements UsersService {
         if(userInDTO.getName().isEmpty() || userInDTO.getEmail().isEmpty() || userInDTO.getAddresses().isEmpty()) {
             throw new BadRequestException("Invalid Request");
         }
+
+        if(userRepository.existsByEmail(userInDTO.getEmail())) {
+            throw new BadRequestException("Email already exists: " + userInDTO.getEmail());
+        }
+
         Users user = mapToEntity(userInDTO);
         for (Address address : user.getAddresses()) {
             address.setUser(user);
@@ -38,6 +43,7 @@ public class UsersServiceImpl implements UsersService {
         Users savedUser = userRepository.save(user);
         return mapToDTO(savedUser);
     }
+
 
     @Override
     public List<UserOutDTO> getAllUsers() {
