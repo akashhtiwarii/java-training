@@ -4,6 +4,7 @@ import com.example.foreignkeyannotations.dto.AddressInDTO;
 import com.example.foreignkeyannotations.dto.UserInDTO;
 import com.example.foreignkeyannotations.dto.UserOutDTO;
 import com.example.foreignkeyannotations.entity.Users;
+import com.example.foreignkeyannotations.exceptions.BadRequestException;
 import com.example.foreignkeyannotations.exceptions.ResourceNotFoundException;
 import com.example.foreignkeyannotations.repository.UsersRepository;
 import com.example.foreignkeyannotations.serviceImpl.UsersServiceImpl;
@@ -74,5 +75,54 @@ class UsersServiceImplTest {
         UserOutDTO saved = userService.createUser(dto);
 
         assertEquals("John Doe", saved.getName());
+    }
+
+    @Test
+    void testSaveUser_missingName() {
+        UserInDTO dto = new UserInDTO();
+        dto.setName("");
+        dto.setEmail("john@example.com");
+        dto.setAddresses(new ArrayList<>());
+
+        assertThrows(BadRequestException.class, () -> userService.createUser(dto));
+    }
+
+    @Test
+    void testSaveUser_missingEmail() {
+        UserInDTO dto = new UserInDTO();
+        dto.setName("John Doe");
+        dto.setEmail("");
+        dto.setAddresses(new ArrayList<>());
+
+        assertThrows(BadRequestException.class, () -> userService.createUser(dto));
+    }
+
+    @Test
+    void testSaveUser_missingAddress() {
+        UserInDTO dto = new UserInDTO();
+        dto.setName("John Doe");
+        dto.setEmail("john@example.com");
+        dto.setAddresses(new ArrayList<>());
+
+        assertThrows(BadRequestException.class, () -> userService.createUser(dto));
+    }
+
+    @Test
+    void testGetAllUsers_success() {
+        List<Users> users = new ArrayList<>();
+        users.add(user);
+        when(userRepository.findAll()).thenReturn(users);
+
+        List<UserOutDTO> result = userService.getAllUsers();
+
+        assertEquals(1, result.size());
+        assertEquals("John Doe", result.get(0).getName());
+    }
+
+    @Test
+    void testGetAllUsers_emptyList() {
+        when(userRepository.findAll()).thenReturn(new ArrayList<>());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getAllUsers());
     }
 }
