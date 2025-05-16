@@ -5,9 +5,9 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UserDTO {
+public class UserOutDTO {
+    private Long id;
     private String name;
     private String email;
-    private List<AddressDTO> addresses;
-
+    private List<AddressOutDTO> addresses;
 }

@@ -1,6 +1,7 @@
 package com.example.foreignkeyannotations.controller;
 
-import com.example.foreignkeyannotations.dto.UserDTO;
+import com.example.foreignkeyannotations.dto.UserInDTO;
+import com.example.foreignkeyannotations.dto.UserOutDTO;
 import com.example.foreignkeyannotations.exceptions.BadRequestException;
 import com.example.foreignkeyannotations.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +17,17 @@ public class UserController {
     private UsersService userService;
 
     @PostMapping
-    public UserDTO createUser(@RequestBody UserDTO userDTO) {
-        return userService.createUser(userDTO);
+    public UserOutDTO createUser(@RequestBody UserInDTO userInDTO) {
+        return userService.createUser(userInDTO);
     }
 
     @GetMapping
-    public List<UserDTO> getAllUsers() {
+    public List<UserOutDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public UserDTO getUserById(@PathVariable Long id) {
+    public UserOutDTO getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 

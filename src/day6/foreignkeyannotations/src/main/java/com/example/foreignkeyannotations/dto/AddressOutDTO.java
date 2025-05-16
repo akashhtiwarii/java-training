@@ -3,7 +3,8 @@ package com.example.foreignkeyannotations.dto;
 import lombok.Data;
 
 @Data
-public class AddressDTO {
+public class AddressOutDTO {
+    private Long id;
     private String city;
     private String state;
 }
