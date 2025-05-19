@@ -119,4 +119,16 @@ public interface EmployeeService {
      * @throws ResourceInvalidException if minSalary is greater than maxSalary
      */
     List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary);
+
+    /**
+     * Exports all employees in the system to a CSV file.
+     * <p>
+     * Generates a CSV file with headers: email, firstName, lastName, phoneNumber, role, department, salary.
+     * Each row represents an employee record from the database.
+     * </p>
+     *
+     * @return byte array containing the CSV data
+     * @throws ResourceNotFoundException if no employees are found in the system
+     */
+    byte[] exportEmployeesToCsv();
 }

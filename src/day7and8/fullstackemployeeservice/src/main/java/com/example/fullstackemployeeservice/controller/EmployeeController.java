@@ -3,6 +3,8 @@ package com.example.fullstackemployeeservice.controller;
 import com.example.fullstackemployeeservice.inDTO.EmployeeInDTO;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.service.EmployeeService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -171,5 +173,21 @@ public class EmployeeController {
     public ResponseEntity<List<EmployeeOutDTO>> uploadEmployeesCsv(@RequestParam("file") MultipartFile file) {
         logger.info("Received request to upload CSV file for bulk employee creation");
         return new ResponseEntity<>(employeeService.addEmployeesFromCsv(file), HttpStatus.CREATED);
+    }
+
+    /**
+     * Exports all employees to a CSV file.
+     *
+     * @return ResponseEntity with the CSV file as a byte array
+     */
+    @GetMapping("/export-csv")
+    public ResponseEntity<byte[]> exportEmployeesToCsv() {
+        byte[] csvData = employeeService.exportEmployeesToCsv();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employees.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .contentLength(csvData.length)
+                .body(csvData);
     }
 }

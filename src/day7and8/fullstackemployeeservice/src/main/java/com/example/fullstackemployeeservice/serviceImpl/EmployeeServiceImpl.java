@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.CSVPrinter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -382,6 +382,52 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         logger.info("Successfully Fetched employees with salary range: {} - {}", minSalary, maxSalary);
         return employeeMapper.toDtoList(employees);
+    }
+
+    /**
+     * Exports all employees in the system to a CSV file.
+     * <p>
+     * Generates a CSV file with headers: email, firstName, lastName, phoneNumber, role, department, salary.
+     * Each row represents an employee record from the database.
+     * </p>
+     *
+     * @return byte array containing the CSV data
+     * @throws ResourceNotFoundException if no employees are found in the system
+     */
+    @Override
+    public byte[] exportEmployeesToCsv() {
+        logger.info("Exporting all employees to CSV");
+
+        List<Employee> employees = employeeRepository.findAll();
+        if (employees.isEmpty()) {
+            throw new ResourceNotFoundException("No employees found to export");
+        }
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(out),
+                     CSVFormat.DEFAULT.withHeader("email", "firstName", "lastName",
+                             "phoneNumber", "role", "department", "salary"))) {
+
+            for (Employee employee : employees) {
+                csvPrinter.printRecord(
+                        employee.getEmail(),
+                        employee.getFirstName(),
+                        employee.getLastName(),
+                        employee.getPhoneNumber(),
+                        employee.getRole(),
+                        employee.getDepartment(),
+                        employee.getSalary()
+                );
+            }
+
+            csvPrinter.flush();
+            logger.info("Successfully exported {} employees to CSV", employees.size());
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            logger.error("Error generating CSV file", e);
+            throw new RuntimeException("Failed to generate CSV file: " + e.getMessage(), e);
+        }
     }
 
 }
