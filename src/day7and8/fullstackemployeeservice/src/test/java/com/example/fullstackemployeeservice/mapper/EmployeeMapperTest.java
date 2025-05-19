@@ -21,93 +21,96 @@ class EmployeeMapperTest {
     }
 
     @Test
-    void toEntity_ShouldMapAllFields() {
-        EmployeeInDTO dto = new EmployeeInDTO();
-        dto.setEmail("test@example.com");
-        dto.setFirstName("John");
-        dto.setLastName("Doe");
-        dto.setPhoneNumber("1234567890");
-        dto.setRole("Developer");
+    void testToEntity() {
+        EmployeeInDTO dto = new EmployeeInDTO(
+                "test@example.com",
+                "Alice",
+                "Johnson",
+                "1234567890",
+                "EMPLOYEE",
+                "Engineering",
+                75000.0
+        );
 
-        Employee entity = mapper.toEntity(dto);
+        Employee employee = mapper.toEntity(dto);
 
-        assertNotNull(entity);
-        assertEquals(dto.getEmail(), entity.getEmail());
-        assertEquals(dto.getFirstName(), entity.getFirstName());
-        assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getPhoneNumber(), entity.getPhoneNumber());
-        assertEquals(dto.getRole(), entity.getRole());
+        assertEquals(dto.getEmail(), employee.getEmail());
+        assertEquals(dto.getFirstName(), employee.getFirstName());
+        assertEquals(dto.getLastName(), employee.getLastName());
+        assertEquals(dto.getPhoneNumber(), employee.getPhoneNumber());
+        assertEquals(dto.getRole(), employee.getRole());
+        assertEquals(dto.getDepartment(), employee.getDepartment());
+        assertEquals(dto.getSalary(), employee.getSalary());
     }
 
     @Test
-    void toDto_ShouldMapAllFields() {
-        Employee entity = new Employee();
-        entity.setEmail("test@example.com");
-        entity.setFirstName("Jane");
-        entity.setLastName("Smith");
-        entity.setPhoneNumber("0987654321");
-        entity.setRole("Manager");
+    void testToDto() {
+        Employee employee = new Employee(
+                1L,
+                "bob@example.com",
+                "Bob",
+                "Smith",
+                "5551234567",
+                "ADMIN",
+                "HR",
+                90000.0
+        );
 
-        EmployeeOutDTO dto = mapper.toDto(entity);
+        EmployeeOutDTO dto = mapper.toDto(employee);
 
-        assertNotNull(dto);
-        assertEquals(entity.getEmail(), dto.getEmail());
-        assertEquals(entity.getFirstName(), dto.getFirstName());
-        assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getPhoneNumber(), dto.getPhoneNumber());
-        assertEquals(entity.getRole(), dto.getRole());
+        assertEquals(employee.getEmail(), dto.getEmail());
+        assertEquals(employee.getFirstName(), dto.getFirstName());
+        assertEquals(employee.getLastName(), dto.getLastName());
+        assertEquals(employee.getPhoneNumber(), dto.getPhoneNumber());
+        assertEquals(employee.getRole(), dto.getRole());
+        assertEquals(employee.getDepartment(), dto.getDepartment());
+        assertEquals(employee.getSalary(), dto.getSalary());
     }
 
     @Test
-    void toDtoList_ShouldMapListOfEntities() {
-        Employee e1 = new Employee();
-        e1.setEmail("e1@example.com");
-        e1.setFirstName("E1First");
-        e1.setLastName("E1Last");
-        e1.setPhoneNumber("1111111111");
-        e1.setRole("Role1");
+    void testToDtoList() {
+        Employee employee1 = new Employee(
+                1L, "a@example.com", "A", "One", "111", "EMPLOYEE", "IT", 50000.0);
+        Employee employee2 = new Employee(
+                2L, "b@example.com", "B", "Two", "222", "HR", "Finance", 60000.0);
 
-        Employee e2 = new Employee();
-        e2.setEmail("e2@example.com");
-        e2.setFirstName("E2First");
-        e2.setLastName("E2Last");
-        e2.setPhoneNumber("2222222222");
-        e2.setRole("Role2");
+        List<Employee> employees = Arrays.asList(employee1, employee2);
+        List<EmployeeOutDTO> dtoList = mapper.toDtoList(employees);
 
-        List<Employee> employees = Arrays.asList(e1, e2);
-
-        List<EmployeeOutDTO> dtos = mapper.toDtoList(employees);
-
-        assertNotNull(dtos);
-        assertEquals(2, dtos.size());
-
-        assertEquals(e1.getEmail(), dtos.get(0).getEmail());
-        assertEquals(e2.getEmail(), dtos.get(1).getEmail());
+        assertEquals(2, dtoList.size());
+        assertEquals("a@example.com", dtoList.get(0).getEmail());
+        assertEquals("b@example.com", dtoList.get(1).getEmail());
     }
 
     @Test
-    void updateEntityFromDto_ShouldUpdateAllFields() {
-        EmployeeInDTO dto = new EmployeeInDTO();
-        dto.setEmail("update@example.com");
-        dto.setFirstName("UpdatedFirst");
-        dto.setLastName("UpdatedLast");
-        dto.setPhoneNumber("9999999999");
-        dto.setRole("UpdatedRole");
+    void testUpdateEntityFromDto() {
+        Employee employee = new Employee();
+        employee.setEmail("old@example.com");
+        employee.setFirstName("Old");
+        employee.setLastName("Data");
+        employee.setPhoneNumber("0000000000");
+        employee.setRole("OLD_ROLE");
+        employee.setDepartment("OLD_DEPT");
+        employee.setSalary(1000.0);
 
-        Employee entity = new Employee();
-        entity.setEmail("old@example.com");
-        entity.setFirstName("OldFirst");
-        entity.setLastName("OldLast");
-        entity.setPhoneNumber("0000000000");
-        entity.setRole("OldRole");
+        EmployeeInDTO updateDto = new EmployeeInDTO(
+                "new@example.com",
+                "NewFirst",
+                "NewLast",
+                "9999999999",
+                "NEW_ROLE",
+                "NEW_DEPT",
+                120000.0
+        );
 
-        mapper.updateEntityFromDto(dto, entity);
+        mapper.updateEntityFromDto(updateDto, employee);
 
-        assertEquals(dto.getEmail(), entity.getEmail());
-        assertEquals(dto.getFirstName(), entity.getFirstName());
-        assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getPhoneNumber(), entity.getPhoneNumber());
-        assertEquals(dto.getRole(), entity.getRole());
+        assertEquals("new@example.com", employee.getEmail());
+        assertEquals("NewFirst", employee.getFirstName());
+        assertEquals("NewLast", employee.getLastName());
+        assertEquals("9999999999", employee.getPhoneNumber());
+        assertEquals("NEW_ROLE", employee.getRole());
+        assertEquals("NEW_DEPT", employee.getDepartment());
+        assertEquals(120000.0, employee.getSalary());
     }
 }
-

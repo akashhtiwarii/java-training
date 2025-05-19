@@ -35,6 +35,8 @@ public class EmployeeMapper {
         employee.setLastName(employeeInDTO.getLastName());
         employee.setPhoneNumber(employeeInDTO.getPhoneNumber());
         employee.setRole(employeeInDTO.getRole());
+        employee.setDepartment(employeeInDTO.getDepartment());
+        employee.setSalary(employeeInDTO.getSalary());
         return employee;
     }
 
@@ -51,6 +53,8 @@ public class EmployeeMapper {
         employeeOutDTO.setLastName(employee.getLastName());
         employeeOutDTO.setPhoneNumber(employee.getPhoneNumber());
         employeeOutDTO.setRole(employee.getRole());
+        employeeOutDTO.setDepartment(employee.getDepartment());
+        employeeOutDTO.setSalary(employee.getSalary());
         return employeeOutDTO;
     }
 
@@ -78,5 +82,7 @@ public class EmployeeMapper {
         employee.setLastName(employeeInDTO.getLastName());
         employee.setPhoneNumber(employeeInDTO.getPhoneNumber());
         employee.setRole(employeeInDTO.getRole());
+        employee.setDepartment(employeeInDTO.getDepartment());
+        employee.setSalary(employeeInDTO.getSalary());
     }
 }

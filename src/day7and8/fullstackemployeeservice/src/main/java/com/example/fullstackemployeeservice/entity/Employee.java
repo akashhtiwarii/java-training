@@ -50,6 +50,18 @@ public class Employee {
     private String role;
 
     /**
+     * Department of the employee. Cannot be null.
+     */
+    @Column(nullable = false)
+    private String department;
+
+    /**
+     * Salary of the employee. Cannot be null.
+     */
+    @Column(nullable = false)
+    private Double salary;
+
+    /**
      * Default no-argument constructor.
      */
     public Employee() {
@@ -64,15 +76,21 @@ public class Employee {
      * @param lastName    the employee's last name
      * @param phoneNumber the employee's phone number
      * @param role        the employee's role
+     * @param department  the employee's department
+     * @param salary      the employee's salary
      */
-    public Employee(Long id, String email, String firstName, String lastName, String phoneNumber, String role) {
+    public Employee(Long id, String email, String firstName, String lastName, String phoneNumber,
+                    String role, String department, Double salary) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.department = department;
+        this.salary = salary;
     }
+
 
     /**
      * Gets the employee's ID.
@@ -183,6 +201,42 @@ public class Employee {
     }
 
     /**
+     * Gets the employee's department.
+     *
+     * @return the department
+     */
+    public String getDepartment() {
+        return department;
+    }
+
+    /**
+     * Sets the employee's department.
+     *
+     * @param department the department to set
+     */
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    /**
+     * Gets the employee's salary.
+     *
+     * @return the salary
+     */
+    public Double getSalary() {
+        return salary;
+    }
+
+    /**
+     * Sets the employee's salary.
+     *
+     * @param salary the salary to set
+     */
+    public void setSalary(Double salary) {
+        this.salary = salary;
+    }
+
+    /**
      * Checks equality based on employee ID and email.
      *
      * @param o the object to compare
@@ -193,8 +247,7 @@ public class Employee {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) &&
-                Objects.equals(email, employee.email);
+        return Objects.equals(id, employee.id) && Objects.equals(email, employee.email) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(phoneNumber, employee.phoneNumber) && Objects.equals(role, employee.role) && Objects.equals(department, employee.department) && Objects.equals(salary, employee.salary);
     }
 
     /**
@@ -204,7 +257,7 @@ public class Employee {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(id, email);
+        return Objects.hash(id, email, firstName, lastName, phoneNumber, role, department, salary);
     }
 
     /**
@@ -221,6 +274,8 @@ public class Employee {
                 ", lastName='" + lastName + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", role='" + role + '\'' +
+                ", department='" + department + '\'' +
+                ", salary=" + salary +
                 '}';
     }
 }

@@ -9,6 +9,8 @@ import com.example.fullstackemployeeservice.mapper.EmployeeMapper;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.repository.EmployeeRepository;
 import com.example.fullstackemployeeservice.service.EmployeeService;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.springframework.stereotype.Service;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -22,8 +24,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link EmployeeService} interface that provides business logic
@@ -40,6 +45,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    @Autowired
+    private Validator validator;
 
     /**
      * Constructs a new EmployeeServiceImpl with required dependencies.
@@ -238,24 +245,39 @@ public class EmployeeServiceImpl implements EmployeeService {
                     String lastName = csvRecord.get("lastName");
                     String phoneNumber = csvRecord.get("phoneNumber");
                     String role = csvRecord.get("role");
+                    String department = csvRecord.get("department");
+                    String salaryStr = csvRecord.get("salary");
 
                     if (email == null || email.isEmpty()) {
                         errorMessages.add("Line " + lineNumber + ": Email is required");
                         continue;
                     }
-
                     if (firstName == null || firstName.isEmpty()) {
                         errorMessages.add("Line " + lineNumber + ": First name is required");
                         continue;
                     }
-
                     if (lastName == null || lastName.isEmpty()) {
                         errorMessages.add("Line " + lineNumber + ": Last name is required");
                         continue;
                     }
-
                     if (role == null || role.isEmpty()) {
                         errorMessages.add("Line " + lineNumber + ": Role is required");
+                        continue;
+                    }
+                    if (department == null || department.isEmpty()) {
+                        errorMessages.add("Line " + lineNumber + ": Department is required");
+                        continue;
+                    }
+                    if (salaryStr == null || salaryStr.isEmpty()) {
+                        errorMessages.add("Line " + lineNumber + ": Salary is required");
+                        continue;
+                    }
+
+                    Double salary;
+                    try {
+                        salary = Double.valueOf(salaryStr);
+                    } catch (NumberFormatException e) {
+                        errorMessages.add("Line " + lineNumber + ": Invalid salary value");
                         continue;
                     }
 
@@ -278,6 +300,17 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employeeDTO.setLastName(lastName);
                     employeeDTO.setPhoneNumber(phoneNumber);
                     employeeDTO.setRole(role);
+                    employeeDTO.setDepartment(department);
+                    employeeDTO.setSalary(salary);
+
+                    Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(employeeDTO);
+                    if (!violations.isEmpty()) {
+                        String validationErrors = violations.stream()
+                                .map(v -> v.getPropertyPath() + " " + v.getMessage())
+                                .collect(Collectors.joining(", "));
+                        errorMessages.add("Line " + lineNumber + ": " + validationErrors);
+                        continue;
+                    }
 
                     employeeDTOs.add(employeeDTO);
 
@@ -307,4 +340,48 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ResourceInvalidException("Error processing CSV file: " + e.getMessage());
         }
     }
+
+
+    /**
+     * Retrieves a list of employees belonging to the specified department.
+     *
+     * @param department the name of the department to filter employees by.
+     * @return a list of {@link EmployeeOutDTO} objects representing the employees in the specified department.
+     * @throws ResourceNotFoundException if no employees are found in the given department.
+     */
+    @Override
+    public List<EmployeeOutDTO> getEmployeesByDepartment(String department) {
+        logger.info("Fetching employees with department: {}", department);
+        List<Employee> employees = employeeRepository.findByDepartment(department);
+        if (employees.isEmpty()) {
+            throw new ResourceNotFoundException("No employees found in department: " + department);
+        }
+        logger.info("Successfully Fetched employees with department: {}", department);
+        return employeeMapper.toDtoList(employees);
+    }
+
+    /**
+     * Retrieves a list of employees whose salaries fall within the specified range.
+     *
+     * @param minSalary the minimum salary (inclusive).
+     * @param maxSalary the maximum salary (inclusive).
+     * @return a list of {@link EmployeeOutDTO} objects representing the employees within the specified salary range.
+     * @throws ResourceInvalidException if the minimum salary is greater than the maximum salary.
+     * @throws ResourceNotFoundException if no employees are found within the specified salary range.
+     */
+    public List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary) {
+        logger.info("Fetching employees with salary range: {} - {}", minSalary, maxSalary);
+        if (minSalary > maxSalary) {
+            throw new ResourceInvalidException("Minimum salary cannot be greater than maximum salary");
+        }
+
+        List<Employee> employees = employeeRepository.findBySalaryBetween(minSalary, maxSalary);
+        if (employees.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No employees found with salary between " + minSalary + " and " + maxSalary);
+        }
+        logger.info("Successfully Fetched employees with salary range: {} - {}", minSalary, maxSalary);
+        return employeeMapper.toDtoList(employees);
+    }
+
 }

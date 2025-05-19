@@ -1,7 +1,7 @@
 package com.example.fullstackemployeeservice.inDTO;
 
 import jakarta.validation.*;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -10,73 +10,136 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeInDTOTest {
 
-    private static Validator validator;
+    private Validator validator;
 
-    @BeforeAll
-    static void setupValidatorInstance() {
+    @BeforeEach
+    void setup() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testNoArgsConstructor() {
         EmployeeInDTO dto = new EmployeeInDTO();
+        assertNotNull(dto);
+    }
 
-        dto.setEmail("test@gmail.com");
-        dto.setFirstName("John");
-        dto.setLastName("Doe");
-        dto.setPhoneNumber("+12345678901");
-        dto.setRole("ADMIN");
+    @Test
+    void testAllArgsConstructorAndGetters() {
+        EmployeeInDTO dto = new EmployeeInDTO(
+                "test@gmail.com",
+                "John",
+                "Doe",
+                "+1234567890",
+                "EMPLOYEE",
+                "Engineering",
+                50000.0
+        );
 
         assertEquals("test@gmail.com", dto.getEmail());
         assertEquals("John", dto.getFirstName());
         assertEquals("Doe", dto.getLastName());
-        assertEquals("+12345678901", dto.getPhoneNumber());
-        assertEquals("ADMIN", dto.getRole());
+        assertEquals("+1234567890", dto.getPhoneNumber());
+        assertEquals("EMPLOYEE", dto.getRole());
+        assertEquals("Engineering", dto.getDepartment());
+        assertEquals(50000.0, dto.getSalary());
     }
 
     @Test
-    void testParameterizedConstructor() {
-        EmployeeInDTO dto = new EmployeeInDTO("jane@gmail.com", "Jane", "Smith", "1234567890", "HR");
+    void testSetters() {
+        EmployeeInDTO dto = new EmployeeInDTO();
+        dto.setEmail("valid@gmail.com");
+        dto.setFirstName("Alice");
+        dto.setLastName("Smith");
+        dto.setPhoneNumber("9876543210");
+        dto.setRole("HR");
+        dto.setDepartment("Human Resources");
+        dto.setSalary(45000.0);
 
-        assertEquals("jane@gmail.com", dto.getEmail());
-        assertEquals("Jane", dto.getFirstName());
+        assertEquals("valid@gmail.com", dto.getEmail());
+        assertEquals("Alice", dto.getFirstName());
         assertEquals("Smith", dto.getLastName());
-        assertEquals("1234567890", dto.getPhoneNumber());
+        assertEquals("9876543210", dto.getPhoneNumber());
         assertEquals("HR", dto.getRole());
+        assertEquals("Human Resources", dto.getDepartment());
+        assertEquals(45000.0, dto.getSalary());
     }
 
     @Test
-    void testValidationSuccess() {
-        EmployeeInDTO dto = new EmployeeInDTO("valid@gmail.com", "Alice", "O'Neil", "+12345678901", "EMPLOYEE");
+    void testToStringContainsFields() {
+        EmployeeInDTO dto = new EmployeeInDTO("john@gmail.com", "John", "Smith", "1234567890", "ADMIN", "Finance", 100000.0);
+        String str = dto.toString();
+        assertTrue(str.contains("john@gmail.com"));
+        assertTrue(str.contains("John"));
+        assertTrue(str.contains("Smith"));
+        assertTrue(str.contains("1234567890"));
+        assertTrue(str.contains("ADMIN"));
+        assertTrue(str.contains("Finance"));
+        assertTrue(str.contains("100000.0"));
+    }
 
+    @Test
+    void testValidDTO() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "+11234567890", "ADMIN", "IT", 70000.0);
         Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty());
     }
 
     @Test
-    void testValidationFailures() {
-        EmployeeInDTO dto = new EmployeeInDTO("invalidemail", "J", "", "phone", "INVALID_ROLE");
-
+    void testInvalidEmail() {
+        EmployeeInDTO dto = new EmployeeInDTO("invalid-email", "Jane", "Doe", "+11234567890", "ADMIN", "IT", 70000.0);
         Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
         assertFalse(violations.isEmpty());
-
-        Set<String> messages = violations.stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(java.util.stream.Collectors.toSet());
-
-        assertTrue(messages.contains("Email should be valid") || messages.contains("Only Gmail addresses are accepted"));
-        assertTrue(messages.contains("First name should be valid"));
-        assertTrue(messages.contains("Last name is required") || messages.contains("Last name should be valid"));
-        assertTrue(messages.contains("Phone number should be valid"));
-        assertTrue(messages.contains("Role must be one of: ADMIN, EMPLOYEE, HR"));
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
     }
 
     @Test
-    void testToString() {
-        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Bob", "Marley", "1234567890", "HR");
-        String expected = "EmployeeInDTO{email='user@gmail.com', firstName='Bob', lastName='Marley', phoneNumber='1234567890', role='HR'}";
-        assertEquals(expected, dto.toString());
+    void testInvalidFirstName() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "J", "Doe", "+11234567890", "ADMIN", "IT", 70000.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertFalse(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("lastName")));
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("firstName")));
+    }
+
+    @Test
+    void testInvalidLastName() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "", "+11234567890", "ADMIN", "IT", 70000.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("lastName")));
+    }
+
+    @Test
+    void testInvalidPhoneNumber() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "abc123", "ADMIN", "IT", 70000.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("phoneNumber")));
+    }
+
+    @Test
+    void testInvalidRole() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "+11234567890", "CEO", "IT", 70000.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("role")));
+    }
+
+    @Test
+    void testInvalidDepartment() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "+11234567890", "HR", "", 70000.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("department")));
+    }
+
+    @Test
+    void testInvalidSalary() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "+11234567890", "HR", "Admin", -100.0);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("salary")));
+    }
+
+    @Test
+    void testNullSalary() {
+        EmployeeInDTO dto = new EmployeeInDTO("user@gmail.com", "Jane", "Doe", "+11234567890", "HR", "Admin", null);
+        Set<ConstraintViolation<EmployeeInDTO>> violations = validator.validate(dto);
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("salary")));
     }
 }
-

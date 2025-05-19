@@ -1,8 +1,6 @@
 package com.example.fullstackemployeeservice.inDTO;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 
 /**
  * Data Transfer Object used for receiving employee input data in create or update operations.
@@ -53,6 +51,22 @@ public class EmployeeInDTO {
     private String role;
 
     /**
+     * The employee's department.
+     * Must be a non-blank string.
+     */
+    @NotBlank(message = "Department is required")
+    @Pattern(regexp = "^[A-Za-z\\s-&]{2,50}$", message = "Department should be valid")
+    private String department;
+
+    /**
+     * The employee's salary.
+     * Must be a positive number.
+     */
+    @NotNull(message = "Salary is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Salary must be greater than zero")
+    private Double salary;
+
+    /**
      * Default constructor.
      */
     public EmployeeInDTO() {
@@ -66,13 +80,18 @@ public class EmployeeInDTO {
      * @param lastName    the last name of the employee
      * @param phoneNumber the phone number of the employee
      * @param role        the role of the employee
+     * @param department  the department of the employee
+     * @param salary      the salary of the employee
      */
-    public EmployeeInDTO(String email, String firstName, String lastName, String phoneNumber, String role) {
+    public EmployeeInDTO(String email, String firstName, String lastName, String phoneNumber,
+                         String role, String department, Double salary) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.department = department;
+        this.salary = salary;
     }
 
     public String getEmail() {
@@ -115,6 +134,22 @@ public class EmployeeInDTO {
         this.role = role;
     }
 
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public Double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Double salary) {
+        this.salary = salary;
+    }
+
     /**
      * Returns a string representation of the EmployeeInDTO object.
      *
@@ -128,6 +163,8 @@ public class EmployeeInDTO {
                 ", lastName='" + lastName + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", role='" + role + '\'' +
+                ", department='" + department + '\'' +
+                ", salary=" + salary +
                 '}';
     }
 }

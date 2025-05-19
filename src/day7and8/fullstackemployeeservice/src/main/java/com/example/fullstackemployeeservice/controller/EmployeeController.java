@@ -134,6 +134,34 @@ public class EmployeeController {
     }
 
     /**
+     * Retrieves all employees from a specific department.
+     *
+     * @param department the department name to filter by
+     * @return a list of employees in the department
+     */
+    @GetMapping("/department/{department}")
+    public ResponseEntity<List<EmployeeOutDTO>> getEmployeesByDepartment(@PathVariable String department) {
+        logger.info("Received request to get employees from department: {}", department);
+        return new ResponseEntity<>(employeeService.getEmployeesByDepartment(department), HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves all employees with salary within a specified range.
+     *
+     * @param minSalary the minimum salary value
+     * @param maxSalary the maximum salary value
+     * @return a list of employees with salary in the range
+     */
+    @GetMapping("/salary-range")
+    public ResponseEntity<List<EmployeeOutDTO>> getEmployeesBySalaryRange(
+            @RequestParam Double minSalary, @RequestParam Double maxSalary) {
+        logger.info("Received request to get employees with salary between {} and {}", minSalary, maxSalary);
+        return new ResponseEntity<>(
+                employeeService.getEmployeesBySalaryRange(minSalary, maxSalary), HttpStatus.OK);
+    }
+
+
+    /**
      * Uploads a CSV file and creates multiple employees from it.
      *
      * @param file the CSV file containing employee data

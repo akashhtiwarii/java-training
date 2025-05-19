@@ -17,7 +17,6 @@ class ErrorResponseTest {
         LocalDateTime before = LocalDateTime.now().minusSeconds(1);
         LocalDateTime after = LocalDateTime.now().plusSeconds(1);
 
-        // timestamp should be within a reasonable range (between before and after)
         assertTrue(errorResponse.getTimestamp().isAfter(before));
         assertTrue(errorResponse.getTimestamp().isBefore(after));
     }

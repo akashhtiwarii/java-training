@@ -99,4 +99,24 @@ public interface EmployeeService {
      * @throws ResourceAlreadyExistsException if any employee in the CSV has an email that already exists in the system
      */
     List<EmployeeOutDTO> addEmployeesFromCsv(MultipartFile file);
+
+    /**
+     * Retrieves all employees from a specific department.
+     *
+     * @param department the department name to filter by
+     * @return List of employees in the specified department
+     * @throws ResourceNotFoundException if no employees are found in the department
+     */
+    List<EmployeeOutDTO> getEmployeesByDepartment(String department);
+
+    /**
+     * Retrieves all employees with salary within a specified range.
+     *
+     * @param minSalary the minimum salary value (inclusive)
+     * @param maxSalary the maximum salary value (inclusive)
+     * @return List of employees with salary in the specified range
+     * @throws ResourceNotFoundException if no employees are found within the salary range
+     * @throws ResourceInvalidException if minSalary is greater than maxSalary
+     */
+    List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary);
 }

@@ -34,6 +34,16 @@ public class EmployeeOutDTO {
     private String role;
 
     /**
+     * Department of the employee.
+     */
+    private String department;
+
+    /**
+     * Salary of the employee.
+     */
+    private Double salary;
+
+    /**
      * Default constructor.
      */
     public EmployeeOutDTO() {
@@ -47,13 +57,18 @@ public class EmployeeOutDTO {
      * @param lastName    the employee's last name
      * @param phoneNumber the employee's phone number
      * @param role        the employee's role
+     * @param department  the employee's department
+     * @param salary      the employee's salary
      */
-    public EmployeeOutDTO(String email, String firstName, String lastName, String phoneNumber, String role) {
+    public EmployeeOutDTO(String email, String firstName, String lastName,
+                          String phoneNumber, String role, String department, Double salary) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.department = department;
+        this.salary = salary;
     }
 
     /**
@@ -147,6 +162,42 @@ public class EmployeeOutDTO {
     }
 
     /**
+     * Returns the employee's department.
+     *
+     * @return the department
+     */
+    public String getDepartment() {
+        return department;
+    }
+
+    /**
+     * Sets the employee's department.
+     *
+     * @param department the department
+     */
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    /**
+     * Returns the employee's salary.
+     *
+     * @return the salary
+     */
+    public Double getSalary() {
+        return salary;
+    }
+
+    /**
+     * Sets the employee's salary.
+     *
+     * @param salary the salary
+     */
+    public void setSalary(Double salary) {
+        this.salary = salary;
+    }
+
+    /**
      * Returns a string representation of the object.
      *
      * @return string representation of the employee
@@ -154,11 +205,13 @@ public class EmployeeOutDTO {
     @Override
     public String toString() {
         return "EmployeeOutDTO{" +
-                ", email='" + email + '\'' +
+                "email='" + email + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", role='" + role + '\'' +
+                ", department='" + department + '\'' +
+                ", salary=" + salary +
                 '}';
     }
 }

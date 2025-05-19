@@ -3,176 +3,189 @@ package com.example.fullstackemployeeservice.controller;
 import com.example.fullstackemployeeservice.inDTO.EmployeeInDTO;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.service.EmployeeService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class EmployeeControllerTest {
 
-    @Mock
     private EmployeeService employeeService;
-
-    @InjectMocks
-    private EmployeeController employeeController;
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        employeeService = Mockito.mock(EmployeeService.class);
+        EmployeeController employeeController = new EmployeeController(employeeService);
+        mockMvc = MockMvcBuilders.standaloneSetup(employeeController).build();
+        objectMapper = new ObjectMapper();
     }
 
     @Test
-    void createEmployee_ShouldReturnCreatedEmployee() {
-        EmployeeInDTO inDTO = new EmployeeInDTO("test@gmail.com", "John", "Doe", "1234567890", "EMPLOYEE");
-        EmployeeOutDTO outDTO = new EmployeeOutDTO();
-        outDTO.setEmail(inDTO.getEmail());
-
-        when(employeeService.createEmployee(inDTO)).thenReturn(outDTO);
-
-        ResponseEntity<EmployeeOutDTO> response = employeeController.createEmployee(inDTO);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(outDTO, response.getBody());
-
-        verify(employeeService).createEmployee(inDTO);
-    }
-
-    @Test
-    void getAllEmployees_ShouldReturnListOfEmployees() {
-        EmployeeOutDTO dto1 = new EmployeeOutDTO();
-        dto1.setEmail("a@gmail.com");
-        EmployeeOutDTO dto2 = new EmployeeOutDTO();
-        dto2.setEmail("b@gmail.com");
-
-        List<EmployeeOutDTO> list = Arrays.asList(dto1, dto2);
-
-        when(employeeService.getAllEmployees()).thenReturn(list);
-
-        ResponseEntity<List<EmployeeOutDTO>> response = employeeController.getAllEmployees();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(list, response.getBody());
-
-        verify(employeeService).getAllEmployees();
-    }
-
-    @Test
-    void getEmployeeById_ShouldReturnEmployee() {
-        Long id = 1L;
-        EmployeeOutDTO dto = new EmployeeOutDTO();
-        dto.setEmail("test@gmail.com");
-
-        when(employeeService.getEmployeeById(id)).thenReturn(dto);
-
-        ResponseEntity<EmployeeOutDTO> response = employeeController.getEmployeeById(id);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(dto, response.getBody());
-
-        verify(employeeService).getEmployeeById(id);
-    }
-
-    @Test
-    void getEmployeeByEmail_ShouldReturnEmployee() {
-        String email = "test@gmail.com";
-        EmployeeOutDTO dto = new EmployeeOutDTO();
-        dto.setEmail(email);
-
-        when(employeeService.getEmployeeByEmail(email)).thenReturn(dto);
-
-        ResponseEntity<EmployeeOutDTO> response = employeeController.getEmployeeByEmail(email);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(dto, response.getBody());
-
-        verify(employeeService).getEmployeeByEmail(email);
-    }
-
-    @Test
-    void updateEmployeeById_ShouldReturnUpdatedEmployee() {
-        Long id = 1L;
-        EmployeeInDTO inDTO = new EmployeeInDTO("test@gmail.com", "John", "Doe", "1234567890", "EMPLOYEE");
-        EmployeeOutDTO outDTO = new EmployeeOutDTO();
-        outDTO.setEmail(inDTO.getEmail());
-
-        when(employeeService.updateEmployeeById(id, inDTO)).thenReturn(outDTO);
-
-        ResponseEntity<EmployeeOutDTO> response = employeeController.updateEmployeeById(id, inDTO);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(outDTO, response.getBody());
-
-        verify(employeeService).updateEmployeeById(id, inDTO);
-    }
-
-    @Test
-    void updateEmployeeByEmail_ShouldReturnUpdatedEmployee() {
-        String email = "test@gmail.com";
-        EmployeeInDTO inDTO = new EmployeeInDTO(email, "John", "Doe", "1234567890", "EMPLOYEE");
-        EmployeeOutDTO outDTO = new EmployeeOutDTO();
-        outDTO.setEmail(email);
-
-        when(employeeService.updateEmployeeByEmail(email, inDTO)).thenReturn(outDTO);
-
-        ResponseEntity<EmployeeOutDTO> response = employeeController.updateEmployeeByEmail(email, inDTO);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(outDTO, response.getBody());
-
-        verify(employeeService).updateEmployeeByEmail(email, inDTO);
-    }
-
-    @Test
-    void deleteEmployee_ShouldReturnNoContent() {
-        Long id = 1L;
-
-        doNothing().when(employeeService).deleteEmployee(id);
-
-        ResponseEntity<Void> response = employeeController.deleteEmployee(id);
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        assertNull(response.getBody());
-
-        verify(employeeService).deleteEmployee(id);
-    }
-
-    @Test
-    void uploadEmployeesCsv_ShouldReturnCreatedEmployees() throws Exception {
-        String csvContent = "email,firstName,lastName,phoneNumber,role\n" +
-                "a@gmail.com,John,Doe,1234567890,EMPLOYEE\n" +
-                "b@gmail.com,Jane,Doe,0987654321,ADMIN\n";
-
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "employees.csv",
-                "text/csv",
-                csvContent.getBytes(StandardCharsets.UTF_8)
+    void testCreateEmployee() throws Exception {
+        EmployeeInDTO inDTO = new EmployeeInDTO(
+                "test@gmail.com",
+                "John",
+                "Doe",
+                "+1234567890",
+                "EMPLOYEE",
+                "Engineering",
+                50000.0
         );
+        EmployeeOutDTO outDTO = new EmployeeOutDTO();
+        when(employeeService.createEmployee(any(EmployeeInDTO.class))).thenReturn(outDTO);
 
-        EmployeeOutDTO dto1 = new EmployeeOutDTO();
-        dto1.setEmail("a@gmail.com");
-        EmployeeOutDTO dto2 = new EmployeeOutDTO();
-        dto2.setEmail("b@gmail.com");
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(outDTO)));
 
-        List<EmployeeOutDTO> outList = Arrays.asList(dto1, dto2);
+        verify(employeeService, times(1)).createEmployee(any(EmployeeInDTO.class));
+    }
 
-        when(employeeService.addEmployeesFromCsv(file)).thenReturn(outList);
+    @Test
+    void testGetAllEmployees() throws Exception {
+        List<EmployeeOutDTO> employees = Arrays.asList(new EmployeeOutDTO(), new EmployeeOutDTO());
+        when(employeeService.getAllEmployees()).thenReturn(employees);
 
-        ResponseEntity<List<EmployeeOutDTO>> response = employeeController.uploadEmployeesCsv(file);
+        mockMvc.perform(get("/api/employees"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(employees)));
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(outList, response.getBody());
+        verify(employeeService, times(1)).getAllEmployees();
+    }
 
-        verify(employeeService).addEmployeesFromCsv(file);
+    @Test
+    void testGetEmployeeById() throws Exception {
+        EmployeeOutDTO outDTO = new EmployeeOutDTO();
+        when(employeeService.getEmployeeById(1L)).thenReturn(outDTO);
+
+        mockMvc.perform(get("/api/employees/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(outDTO)));
+
+        verify(employeeService, times(1)).getEmployeeById(1L);
+    }
+
+    @Test
+    void testGetEmployeeByEmail() throws Exception {
+        EmployeeOutDTO outDTO = new EmployeeOutDTO();
+        when(employeeService.getEmployeeByEmail("test@example.com")).thenReturn(outDTO);
+
+        mockMvc.perform(get("/api/employees/email/test@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(outDTO)));
+
+        verify(employeeService, times(1)).getEmployeeByEmail("test@example.com");
+    }
+
+    @Test
+    void testUpdateEmployeeById() throws Exception {
+        EmployeeInDTO inDTO = new EmployeeInDTO(
+                "test@gmail.com",
+                "John",
+                "Doe",
+                "+1234567890",
+                "EMPLOYEE",
+                "Engineering",
+                50000.0
+        );
+        EmployeeOutDTO outDTO = new EmployeeOutDTO();
+        when(employeeService.updateEmployeeById(eq(1L), any(EmployeeInDTO.class))).thenReturn(outDTO);
+
+        mockMvc.perform(put("/api/employees/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inDTO)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(outDTO)));
+
+        verify(employeeService, times(1)).updateEmployeeById(eq(1L), any(EmployeeInDTO.class));
+    }
+
+    @Test
+    void testUpdateEmployeeByEmail() throws Exception {
+        EmployeeInDTO inDTO = new EmployeeInDTO(
+                "test@gmail.com",
+                "John",
+                "Doe",
+                "+1234567890",
+                "EMPLOYEE",
+                "Engineering",
+                50000.0
+        );
+        EmployeeOutDTO outDTO = new EmployeeOutDTO();
+        when(employeeService.updateEmployeeByEmail(eq("test@example.com"), any(EmployeeInDTO.class))).thenReturn(outDTO);
+
+        mockMvc.perform(put("/api/employees/email/test@example.com")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inDTO)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(outDTO)));
+
+        verify(employeeService, times(1)).updateEmployeeByEmail(eq("test@example.com"), any(EmployeeInDTO.class));
+    }
+
+    @Test
+    void testDeleteEmployee() throws Exception {
+        doNothing().when(employeeService).deleteEmployee(1L);
+
+        mockMvc.perform(delete("/api/employees/1"))
+                .andExpect(status().isNoContent());
+
+        verify(employeeService, times(1)).deleteEmployee(1L);
+    }
+
+    @Test
+    void testGetEmployeesByDepartment() throws Exception {
+        List<EmployeeOutDTO> employees = Arrays.asList(new EmployeeOutDTO());
+        when(employeeService.getEmployeesByDepartment("IT")).thenReturn(employees);
+
+        mockMvc.perform(get("/api/employees/department/IT"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(employees)));
+
+        verify(employeeService, times(1)).getEmployeesByDepartment("IT");
+    }
+
+    @Test
+    void testGetEmployeesBySalaryRange() throws Exception {
+        List<EmployeeOutDTO> employees = Arrays.asList(new EmployeeOutDTO());
+        when(employeeService.getEmployeesBySalaryRange(50000.0, 100000.0)).thenReturn(employees);
+
+        mockMvc.perform(get("/api/employees/salary-range")
+                        .param("minSalary", "50000")
+                        .param("maxSalary", "100000"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(employees)));
+
+        verify(employeeService, times(1)).getEmployeesBySalaryRange(50000.0, 100000.0);
+    }
+
+    @Test
+    void testUploadEmployeesCsv() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "employees.csv",
+                "text/csv", "id,name,email\n1,John Doe,john@example.com".getBytes());
+        List<EmployeeOutDTO> employees = Arrays.asList(new EmployeeOutDTO());
+        when(employeeService.addEmployeesFromCsv(any())).thenReturn(employees);
+
+        mockMvc.perform(multipart("/api/employees/upload-csv").file(file))
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(employees)));
+
+        verify(employeeService, times(1)).addEmployeesFromCsv(any());
     }
 }
-
