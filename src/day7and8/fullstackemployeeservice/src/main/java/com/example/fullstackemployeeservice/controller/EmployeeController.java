@@ -1,6 +1,8 @@
 package com.example.fullstackemployeeservice.controller;
 
+import com.example.fullstackemployeeservice.inDTO.EmailInDTO;
 import com.example.fullstackemployeeservice.inDTO.EmployeeInDTO;
+import com.example.fullstackemployeeservice.outDTO.EmailOutDTO;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.service.EmployeeService;
 import org.springframework.web.bind.annotation.RestController;
@@ -171,5 +173,11 @@ public class EmployeeController {
     public ResponseEntity<List<EmployeeOutDTO>> uploadEmployeesCsv(@RequestParam("file") MultipartFile file) {
         logger.info("Received request to upload CSV file for bulk employee creation");
         return new ResponseEntity<>(employeeService.addEmployeesFromCsv(file), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/notify/feign")
+    public ResponseEntity<EmailOutDTO> notifyEmployeeViaFeign(@RequestBody EmailInDTO emailInDTO) {
+        EmailOutDTO response = employeeService.emailViaFeignClient(emailInDTO);
+        return ResponseEntity.ok(response);
     }
 }

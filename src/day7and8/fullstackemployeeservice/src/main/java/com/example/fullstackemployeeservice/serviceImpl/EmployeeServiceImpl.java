@@ -4,8 +4,11 @@ import com.example.fullstackemployeeservice.entity.Employee;
 import com.example.fullstackemployeeservice.exception.ResourceAlreadyExistsException;
 import com.example.fullstackemployeeservice.exception.ResourceInvalidException;
 import com.example.fullstackemployeeservice.exception.ResourceNotFoundException;
+import com.example.fullstackemployeeservice.fiegnClient.EmailFeignClient;
+import com.example.fullstackemployeeservice.inDTO.EmailInDTO;
 import com.example.fullstackemployeeservice.inDTO.EmployeeInDTO;
 import com.example.fullstackemployeeservice.mapper.EmployeeMapper;
+import com.example.fullstackemployeeservice.outDTO.EmailOutDTO;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.repository.EmployeeRepository;
 import com.example.fullstackemployeeservice.service.EmployeeService;
@@ -45,6 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final EmailFeignClient emailFeignClient;
     @Autowired
     private Validator validator;
 
@@ -52,12 +56,13 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Constructs a new EmployeeServiceImpl with required dependencies.
      *
      * @param employeeRepository the repository for employee data access operations
-     * @param employeeMapper the mapper for converting between entities and DTOs
+     * @param employeeMapper     the mapper for converting between entities and DTOs
      */
     @Autowired
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, EmailFeignClient emailFeignClient) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
+        this.emailFeignClient = emailFeignClient;
     }
 
     /**
@@ -94,7 +99,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeOutDTO> getAllEmployees() {
         logger.info("Fetching all employees");
         List<Employee> employees = employeeRepository.findAll();
-        if(employees.isEmpty()){
+        if (employees.isEmpty()) {
             throw new ResourceNotFoundException("No Employees Found");
         }
         return employeeMapper.toDtoList(employees);
@@ -135,10 +140,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     /**
      * Updates an existing employee identified by their ID.
      *
-     * @param id the unique identifier of the employee to update
+     * @param id            the unique identifier of the employee to update
      * @param employeeInDTO the DTO containing updated employee information
      * @return EmployeeOutDTO representing the updated employee
-     * @throws ResourceNotFoundException if no employee with the given ID exists
+     * @throws ResourceNotFoundException      if no employee with the given ID exists
      * @throws ResourceAlreadyExistsException if the updated email is already in use by another employee
      */
     @Override
@@ -164,10 +169,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     /**
      * Updates an existing employee identified by their email address.
      *
-     * @param email the email address of the employee to update
+     * @param email         the email address of the employee to update
      * @param employeeInDTO the DTO containing updated employee information
      * @return EmployeeOutDTO representing the updated employee
-     * @throws ResourceNotFoundException if no employee with the given email exists
+     * @throws ResourceNotFoundException      if no employee with the given email exists
      * @throws ResourceAlreadyExistsException if the updated email is already in use by another employee
      */
     @Override
@@ -217,8 +222,8 @@ public class EmployeeServiceImpl implements EmployeeService {
      *
      * @param file the MultipartFile containing CSV data of employees to import
      * @return List of EmployeeOutDTO representing all successfully imported employees
-     * @throws ResourceInvalidException if the file is empty, contains validation errors,
-     *         contains duplicate emails, or has processing errors
+     * @throws ResourceInvalidException       if the file is empty, contains validation errors,
+     *                                        contains duplicate emails, or has processing errors
      * @throws ResourceAlreadyExistsException if any employee in the CSV has an email that already exists in the system
      */
     @Override
@@ -366,7 +371,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param minSalary the minimum salary (inclusive).
      * @param maxSalary the maximum salary (inclusive).
      * @return a list of {@link EmployeeOutDTO} objects representing the employees within the specified salary range.
-     * @throws ResourceInvalidException if the minimum salary is greater than the maximum salary.
+     * @throws ResourceInvalidException  if the minimum salary is greater than the maximum salary.
      * @throws ResourceNotFoundException if no employees are found within the specified salary range.
      */
     public List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary) {
@@ -384,4 +389,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toDtoList(employees);
     }
 
+    @Override
+    public EmailOutDTO emailViaFeignClient(EmailInDTO emailInDTO) {
+        EmailOutDTO emailOutDTO = emailFeignClient.sendEmail(emailInDTO);
+        return emailOutDTO;
+    }
 }

@@ -1,6 +1,8 @@
 package com.example.fullstackemployeeservice.service;
 
+import com.example.fullstackemployeeservice.inDTO.EmailInDTO;
 import com.example.fullstackemployeeservice.inDTO.EmployeeInDTO;
+import com.example.fullstackemployeeservice.outDTO.EmailOutDTO;
 import com.example.fullstackemployeeservice.outDTO.EmployeeOutDTO;
 import com.example.fullstackemployeeservice.exception.ResourceAlreadyExistsException;
 import com.example.fullstackemployeeservice.exception.ResourceInvalidException;
@@ -119,4 +121,6 @@ public interface EmployeeService {
      * @throws ResourceInvalidException if minSalary is greater than maxSalary
      */
     List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary);
+
+    public EmailOutDTO emailViaFeignClient(EmailInDTO emailInDTO);
 }
