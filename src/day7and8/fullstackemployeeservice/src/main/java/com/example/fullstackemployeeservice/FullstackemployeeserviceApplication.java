@@ -20,9 +20,4 @@ public class FullstackemployeeserviceApplication {
 		return new RestTemplate();
 	}
 
-	@Bean
-	public WebClient webClient() {
-		return WebClient.builder().baseUrl("http://localhost:8082").build();
-	}
-
 }

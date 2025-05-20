@@ -1,6 +1,7 @@
 package com.example.fullstackemployeeservice.serviceImpl;
 
 import com.example.fullstackemployeeservice.entity.Employee;
+import com.example.fullstackemployeeservice.exception.EmailServiceException;
 import com.example.fullstackemployeeservice.exception.ResourceAlreadyExistsException;
 import com.example.fullstackemployeeservice.exception.ResourceInvalidException;
 import com.example.fullstackemployeeservice.exception.ResourceNotFoundException;
@@ -14,6 +15,10 @@ import com.example.fullstackemployeeservice.repository.EmployeeRepository;
 import com.example.fullstackemployeeservice.service.EmployeeService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -23,7 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -49,6 +56,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final EmailFeignClient emailFeignClient;
+    private final WebClient webClient;
+    private final RestTemplate restTemplate;
     @Autowired
     private Validator validator;
 
@@ -59,10 +68,12 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeMapper     the mapper for converting between entities and DTOs
      */
     @Autowired
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, EmailFeignClient emailFeignClient) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, EmailFeignClient emailFeignClient, WebClient webClient, RestTemplate restTemplate) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
         this.emailFeignClient = emailFeignClient;
+        this.webClient = webClient;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -391,7 +402,45 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmailOutDTO emailViaFeignClient(EmailInDTO emailInDTO) {
-        EmailOutDTO emailOutDTO = emailFeignClient.sendEmail(emailInDTO);
-        return emailOutDTO;
+        try {
+            EmailOutDTO emailOutDTO = emailFeignClient.sendEmail(emailInDTO);
+            return emailOutDTO;
+        } catch (Exception e) {
+            throw new EmailServiceException("Unable to establish connection with email service");
+        }
+    }
+
+    @Override
+    public EmailOutDTO emailViaWebClient(EmailInDTO emailInDTO) {
+        try{
+            return webClient.post()
+                    .uri("/send")
+                    .bodyValue(emailInDTO)
+                    .retrieve()
+                    .bodyToMono(EmailOutDTO.class)
+                    .block();
+        } catch (Exception e) {
+            throw new EmailServiceException("Unable to establish connection with email service");
+        }
+
+    }
+
+    @Override
+    public EmailOutDTO emailViaRestTemplate(EmailInDTO emailInDTO) {
+        try {
+            String url = "http://localhost:8081/api/email/send";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<EmailInDTO> request = new HttpEntity<>(emailInDTO, headers);
+
+            ResponseEntity<EmailOutDTO> response = restTemplate.postForEntity(url, request, EmailOutDTO.class);
+
+            return response.getBody();
+        } catch (Exception e) {
+            throw new EmailServiceException("Unable to establish connection with email service");
+        }
+
     }
 }

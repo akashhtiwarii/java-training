@@ -180,4 +180,16 @@ public class EmployeeController {
         EmailOutDTO response = employeeService.emailViaFeignClient(emailInDTO);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/notify/webclient")
+    public ResponseEntity<EmailOutDTO> notifyEmployeeViaWebClient(@RequestBody EmailInDTO emailInDTO) {
+        EmailOutDTO response = employeeService.emailViaWebClient(emailInDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/notify/rest-template")
+    public ResponseEntity<EmailOutDTO> notifyEmployeeViaRestTemplate(@RequestBody EmailInDTO emailInDTO) {
+        EmailOutDTO response = employeeService.emailViaRestTemplate(emailInDTO);
+        return ResponseEntity.ok(response);
+    }
 }

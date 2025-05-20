@@ -123,4 +123,8 @@ public interface EmployeeService {
     List<EmployeeOutDTO> getEmployeesBySalaryRange(Double minSalary, Double maxSalary);
 
     public EmailOutDTO emailViaFeignClient(EmailInDTO emailInDTO);
+
+    public EmailOutDTO emailViaWebClient(EmailInDTO emailInDTO);
+
+    public EmailOutDTO emailViaRestTemplate(EmailInDTO emailInDTO);
 }
