@@ -1,0 +1,12 @@
+C:\kafka>.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties -> Run Zookeeper
+C:\kafka>.\bin\windows\kafka-server-start.bat .\config\server.properties -> Run kafka server
+
+
+C:\kafka\bin\windows>kafka-topics.bat --create --bootstrap-server localhost:9092 --topic test
+Created topic test.
+
+C:\kafka\bin\windows>kafka-console-producer.bat --broker-list localhost:9092 --topic test
+
+C:\kafka\bin\windows>kafka-console-consumer.bat --topic test --bootstrap-server localhost:9092 --from-beginning
+
+C:\kafka\bin\windows>kafka-console-consumer.bat --topic test --bootstrap-server localhost:9092 --from-beginning --group your-group-name --property print.offset=true
