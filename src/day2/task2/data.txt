@@ -1,0 +1,1 @@
+Hello world hello functional programming in Java Java Java streams are powerful and expressive
